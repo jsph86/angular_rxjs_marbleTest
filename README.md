@@ -8,9 +8,9 @@ More To Say...... (already working on backend challenge)
 
 ## What I Had To Use
 
-Angular Material-UI
-Rxjs Operators
-Marble Test Cases
+- Angular Material-UI
+- Rxjs Operators
+- Marble Test Cases
 
 (Interesting)
 
