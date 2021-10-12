@@ -2,7 +2,7 @@
 
 # About Project
 
-This project is simple project for fronend challenge.
+This is simple project for fronend challenge.
 
 More To Say...... (already working on backend challenge)
 
