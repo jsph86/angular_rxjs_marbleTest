@@ -1,26 +1,34 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Injectable, OnInit } from '@angular/core';
 import { ActionValue } from "./../models/numbers"
 import { ApicallService } from "./../services/apicall.service"
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { catchError } from 'rxjs/operators';
-import { AddParameter } from '../models/add';
-import { MultiplyParameter } from '../models/multiply';
 import { HttpErrorResponse } from '@angular/common/http';
-import { from, Observable, of, Subject, throwError } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import 'rxjs/add/operator/mergeMap';
+import { OverlayModule } from '@angular/cdk/overlay';
+import { MatSnackBar } from "@angular/material/snack-bar";
+import { CommonModule } from '@angular/common';
+import { MatListModule } from '@angular/material/list';
+import { BrowserModule } from '@angular/platform-browser'
+import { Observable } from 'rxjs/Rx';
 
+@Injectable({
+  providedIn: 'root'
+})
 
 @Component({
-  selector: 'app-num-operand',
+  selector: 'num-operand',
   templateUrl: './num-operand.component.html',
   styleUrls: ['./num-operand.component.css']
 })
+
+
 export class NumOperandComponent implements OnInit {
 
-  finalListToShow: string[] = [];
+  public finalListToShow: string[] = [];
 
-
-  constructor(public _snackBar: MatSnackBar, public apiService: ApicallService) { }
+  constructor(public commonModule: CommonModule, public browserModule: BrowserModule, public matListModule: MatListModule, public _snackBar: MatSnackBar, public apiService: ApicallService, public overlayModule: OverlayModule) {
+  }
 
 
   ngOnInit(): void {
@@ -31,68 +39,54 @@ export class NumOperandComponent implements OnInit {
     this.apiService.getNumbers().pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 404) {
-          this._snackBar.open("«Server Error»", "", {
+          this._snackBar.open("« Server Error »", "", {
             duration: 2000,
           });
         }
         return throwError(
           'Something bad happened; please try again later.');
       })
-    ).subscribe(value => { 
-       this.ProcessActionValues(value); });
+    ).subscribe
+      (value => {
+        this.ProcessActionValues(value).subscribe(ress => {
+          ress.then((x) => {
+            this.finalListToShow.push((x.result));
+          })
+        });
+      })
   }
 
 
-
-
-
-
-  ProcessActionValues(actionValues:ActionValue[]) {
-    from(actionValues).
+  ProcessActionValues(actionValues: ActionValue[]): Observable<Promise<ActionValue>> {
+    return of(...actionValues).
       mergeMap(
         (value: ActionValue) =>
-          of(this.DoCalc(value))
-      )
-      .subscribe(value => (value.subscribe(
-        result => this.finalListToShow.push(result)
-      )
-      )
-      );
+          of(this.DoCalc(value)).pipe(catchError((err, caught) => caught)),
+      ).pipe(catchError((err, caught) => caught))
   }
 
 
-
-  DoCalc(actionValue: ActionValue): Observable<string> {
-    var subject = new Subject<string>();
+  async DoCalc(actionValue: ActionValue): Promise<ActionValue> {
+    let res = new ActionValue(actionValue.value, actionValue.action, "")
     if (actionValue.action == "add") {
-      this.apiService.getAdd()
-        .subscribe(
-          (data: AddParameter) => {
-            subject.next(actionValue.value + " + " + data.value + "=" + (actionValue.value + data.value));
-          }
-          ,
-          (error) => {
-            subject.next(actionValue.value + " + <MISSING DATA> = 0");
-          }
-        )
+      let add = await this.apiService.getAddJsonFileContent();
+      if (add == -1) {
+        res.result = actionValue.value + " + <MISSING DATA> = <MISSING DATA>";
+      } else {
+        res.result = actionValue.value + " + " + add + "=" + (actionValue.value + add);
+      }
+      return res;
     }
 
     if (actionValue.action == "multiply") {
-      this.apiService.getMultiply()
-        .subscribe(
-
-          (data: MultiplyParameter) => {
-            subject.next( actionValue.value + " * " + data.value + "=" + (actionValue.value * data.value));
-          }
-          ,
-          (error) => {
-            subject.next(actionValue.value + " * <MISSING DATA> = 0");
-          }
-
-        )
+      let multiply = await this.apiService.getMultiplyJsonFileContent();
+      if (multiply == -1) {
+        res.result = actionValue.value + " * <MISSING DATA> = <MISSING DATA>";
+      } else {
+        res.result = actionValue.value + " * " + multiply + "=" + (actionValue.value * multiply);
+      }
+      return res;
     }
-
-    return subject.asObservable();
+    return new ActionValue(0, "", "");
   }
-
 }
