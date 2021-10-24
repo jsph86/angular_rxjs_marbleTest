@@ -1,29 +1,43 @@
+# Angular & MaterialUI & Marble Test
+
+This project is related to the front challenge and Angular and MaterialUI have been used for its implementation and marble test has been used for testing.
+
+## Installation
+
+You must run the following command to view the output.
 
 
-# About Project
+To receive modules
+```bash
+npm install
+```
 
-This is simple project for fronend challenge.
-
-More To Say...... (already working on backend challenge)
-
-## What I Had To Use
-
-- Angular Material-UI
-- Rxjs Operators
-- Marble Test Cases
-
-(Interesting)
-
-## How to Run
-
+To run the program
+```bash
 ng serve
+```
 
-Easy Haa!!
+running test
+```bash
+ng test
+```
 
-## Build
+After running test command you will see this output
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+> #### ApicallService
+>
+> - should be created
 
-## Running unit tests
+> #### NumOperandComponent
+>
+> - generates the stream correctly
 
-Soooooon!! 
+> #### AppComponent
+>
+> - should create the app
+> - should have as title 'remote-job-start'
+
+
+
+## License
+[MIT](https://choosealicense.com/licenses/mit/)
